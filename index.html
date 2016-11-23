@@ -1,77 +1,229 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="f2xy">
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>f2xy.github.io</title>
+    <script src="js/jquery-1.7.1.min.js"></script>
+    <script src="js/jquery.mousewheel-min.js"></script>
+    <script src="js/jquery.terminal.min.js"></script>
+    <script src="js/xml_formatting.js"></script>
+    <!--<script src="js/unix_formatting.js"></script>-->
 
-	<title>f2xy</title>
+    <link href="css/jquery.terminal.css" rel="stylesheet"/>
 
-    <!-- Bootstrap core CSS -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .canvasContainer
+        {
+            position: fixed;
+            left: 0px;
+            right: 0px;
+            top: 0px;
+            bottom: 0px;
+            z-index: -1;
+            background-color: Black;
+        }
 
-    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <link href="css/ie10-viewport-bug-workaround.css" rel="stylesheet">
+        .contextCanvas
+        {   position: absolute;
+            width: 100%;
+            height: 100%;
+            left: 0px;
+            top: 0px;
+            z-index: -1;
+        }
+    </style>
 
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
-	
-    <!-- Custom styles for this template -->
-    <link href="css/index.css" rel="stylesheet">
+    <script>
+        $(function () {
+            var termID;
 
-    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
-    <!--[if lt IE 9]><script src="js/ie8-responsive-file-warning.js"></script><![endif]-->
-    <script src="js/ie-emulation-modes-warning.js"></script>
+            $('body').terminal(
+                function(command, term) {
 
-	
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
-  </head>
+					//term.echo("unknow command \x1b[1;31m" + command);
+					term.echo("unknow command <red>" + command + "</red>");
 
-  <body>
+                }, {
+                //login: true,
+                greetings:
+						"   __ ___                    _ _   _           _      _       \n" +
+						"  / _|__ \\                  (_) | | |         | |    (_)      \n" +
+						" | |_   ) |_  ___   _   __ _ _| |_| |__  _   _| |__   _  ___  \n" +
+						" |  _| / /\\ \\/ / | | | / _` | | __| '_ \\| | | | '_ \\ | |/ _ \\ \n" +
+						" | |  / /_ >  <| |_| || (_| | | |_| | | | |_| | |_) || | (_) |\n" +
+						" |_| |____/_/\\_\\\\__, (_)__, |_|\\__|_| |_|\\__,_|_.__(_)_|\\___/ \n" +
+						"                 __/ |  __/ |                                 \n" +
+						"                |___/  |___/                                  ",
+                onBlur: function() {
+                        // the height of the body is only 2 lines initialy
+                        return false;
+                    },
+                onInit: function(term){
+					//term.echo("init");
+                }
+                });
+        });
+    </script>
 
-    <div class="site-wrapper">
+    <script type="text/javascript">
+        //Forked from http://andreasstorm.com/
+        //Made by Bogden
 
-      <div class="site-wrapper-inner">
+        //CANVAS
+                $(function(){
+                    var canvas = document.querySelector('canvas'),
+                            ctx = canvas.getContext('2d')
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                    ctx.lineWidth = .3;
+                    ctx.strokeStyle = (new Color(150)).style;
 
-        <div class="cover-container">
+                    var mousePosition = {
+                        x: 50 * canvas.width / 100,
+                        y: 50 * canvas.height / 100
+                    };
 
-          <div class="masthead clearfix">
-            <div class="inner">
-              <h3 class="masthead-brand"></h3>
-            </div>
-          </div>
+                    var dots = {
+                        nb: 250,
+                        distance: 100,
+                        d_radius: 150,
+                        array: []
+                    };
 
-          <div class="inner cover">
-            <h1 class="cover-heading">Merhabalar</h1>
-            <p class="lead">test test.</p>
-          </div>
+                    function colorValue(min) {
+                        return Math.floor(Math.random() * 255 + min);
+                    }
 
-          <div class="mastfoot">
-            <div class="inner">
-              <p><a href="http://f2xy.github.io">f2xy</a></p>
-			  <p>Test.</p>
-            </div>
-          </div>
+                    function createColorStyle(r,g,b) {
+                        return 'rgba(' + r + ',' + g + ',' + b + ', 0.8)';
+                    }
 
-        </div>
+                    function mixComponents(comp1, weight1, comp2, weight2) {
+                        return (comp1 * weight1 + comp2 * weight2) / (weight1 + weight2);
+                    }
 
-      </div>
+                    function averageColorStyles(dot1, dot2) {
+                        var color1 = dot1.color,
+                                color2 = dot2.color;
 
+                        var r = mixComponents(color1.r, dot1.radius, color2.r, dot2.radius),
+                                g = mixComponents(color1.g, dot1.radius, color2.g, dot2.radius),
+                                b = mixComponents(color1.b, dot1.radius, color2.b, dot2.radius);
+                        return createColorStyle(Math.floor(r), Math.floor(g), Math.floor(b));
+                    }
+
+                    function Color(min) {
+                        min = min || 0;
+                        this.r = colorValue(min);
+                        this.g = colorValue(min);
+                        this.b = colorValue(min);
+                        this.style = createColorStyle(this.r, this.g, this.b);
+                    }
+
+                    function Dot(){
+                        this.x = Math.random() * canvas.width;
+                        this.y = Math.random() * canvas.height;
+
+                        this.vx = (-.5 + Math.random())/2;
+                        this.vy = (-.5 + Math.random())/2;
+
+                        this.radius = Math.random() * 2;
+
+                        this.color = new Color();
+                        console.log(this);
+                    }
+
+                    Dot.prototype = {
+                        draw: function(){
+                            ctx.beginPath();
+                            ctx.fillStyle = this.color.style;
+                            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+                            ctx.fill();
+                        }
+                    };
+
+                    function createDots(){
+                        for(i = 0; i < dots.nb; i++){
+                            dots.array.push(new Dot());
+                        }
+                    }
+
+                    function moveDots() {
+                        for(i = 0; i < dots.nb; i++){
+
+                            var dot = dots.array[i];
+
+                            if(dot.y < 0 || dot.y > canvas.height){
+                                dot.vx = dot.vx;
+                                dot.vy = - dot.vy;
+                            }
+                            else if(dot.x < 0 || dot.x > canvas.width){
+                                dot.vx = - dot.vx;
+                                dot.vy = dot.vy;
+                            }
+                            dot.x += dot.vx;
+                            dot.y += dot.vy;
+                        }
+                    }
+
+                    function connectDots() {
+                        for(i = 0; i < dots.nb; i++){
+                            for(j = 0; j < dots.nb; j++){
+                                i_dot = dots.array[i];
+                                j_dot = dots.array[j];
+
+                                if((i_dot.x - j_dot.x) < dots.distance && (i_dot.y - j_dot.y) < dots.distance && (i_dot.x - j_dot.x) > - dots.distance && (i_dot.y - j_dot.y) > - dots.distance){
+                                    if((i_dot.x - mousePosition.x) < dots.d_radius && (i_dot.y - mousePosition.y) < dots.d_radius && (i_dot.x - mousePosition.x) > - dots.d_radius && (i_dot.y - mousePosition.y) > - dots.d_radius){
+                                        ctx.beginPath();
+                                        ctx.strokeStyle = averageColorStyles(i_dot, j_dot);
+                                        ctx.moveTo(i_dot.x, i_dot.y);
+                                        ctx.lineTo(j_dot.x, j_dot.y);
+                                        ctx.stroke();
+                                        ctx.closePath();
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    function drawDots() {
+                        for(i = 0; i < dots.nb; i++){
+                            var dot = dots.array[i];
+                            dot.draw();
+                        }
+                    }
+
+                    function animateDots() {
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        moveDots();
+                        connectDots();
+                        drawDots();
+
+                        requestAnimationFrame(animateDots);
+                    }
+
+                    /*$('canvas').on('mousemove', function(e){
+                        mousePosition.x = e.pageX;
+                        mousePosition.y = e.pageY;
+                    });
+
+                    $('canvas').on('mouseleave', function(e){
+                        mousePosition.x = canvas.width / 2;
+                        mousePosition.y = canvas.height / 2;
+                    });*/
+
+                    $(document).mousemove(function(event) {
+                        mousePosition.x = event.pageX;
+                        mousePosition.y = event.pageY;
+                    });
+
+                    createDots();
+                    requestAnimationFrame(animateDots);
+                });
+    </script>
+</head>
+<body>
+    <div class="canvasContainer">
+        <canvas class="contextCanvas"></canvas>
     </div>
-
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <script>window.jQuery || document.write('<script src="js/vendor/jquery.min.js"><\/script>')</script>
-    <script src="js/bootstrap.min.js"></script>
-    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <script src="js/ie10-viewport-bug-workaround.js"></script>
-
-  </body>
-</html>
+</body>
