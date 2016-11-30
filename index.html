@@ -36,12 +36,24 @@
     <script>
         $(function () {
             var termID;
+			
+			var commands = {
+				ping : function(term){
+					term.echo("pong");
+				},
+				test : function(term){
+					term.echo("test ok");
+				}
+			};
 
             $('body').terminal(
                 function(command, term) {
 
-					//term.echo("unknow command \x1b[1;31m" + command);
-					term.echo("unknow command <red>" + command + "</red>");
+					if(typeof commands[command] === "function"){
+						commands[command](term);
+					}else{
+						term.echo("unknow command <red>" + command + "</red>");
+					}
 
                 }, {
                 //login: true,
